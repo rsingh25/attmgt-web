@@ -23,7 +23,7 @@ COPY --from=build /app/main /app/main
 
 #RUN chown -R appuser:appgroup /app
 
-EXPOSE 8080
+EXPOSE 80
 
 # Switch to the non-root user
 # USER appuser
