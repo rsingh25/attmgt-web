@@ -20,14 +20,14 @@ func main() {
 	mux.HandleFunc("GET /", HelloWorldHandler)
 
 	httpServer := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":80",
 		Handler:      mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Info("Staring HTTP server", "port", 8080)
+	log.Info("Staring HTTP server", "port", 80)
 	err := httpServer.ListenAndServe()
 	if err != nil {
 		log.Error("Server failed to start", "err", err)
