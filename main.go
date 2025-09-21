@@ -17,7 +17,7 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /hello", HelloWorldHandler)
+	mux.HandleFunc("GET /", HelloWorldHandler)
 
 	httpServer := &http.Server{
 		Addr:         ":8080",
