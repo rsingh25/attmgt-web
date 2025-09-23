@@ -1,46 +1,50 @@
 package main
 
 import (
-	"encoding/json"
+	"attmgt-web/internal/database"
+	"attmgt-web/internal/logger"
+	"attmgt-web/internal/server"
 	"log/slog"
 	"net/http"
-	"os"
-	"runtime/debug"
 	"time"
+
+	_ "github.com/joho/godotenv/autoload" //autoloads .env
 )
 
 var log *slog.Logger
 
 func init() {
-	log = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log = logger.Logger.With("package", "main")
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", HelloWorldHandler)
+
+	var httpPort string
+	var db database.Service
+
+	env := logger.GetenvStr("APP_ENV", "")
+	if env == "local" {
+		httpPort = "8080"
+		db = database.NewService(true, false)
+	} else {
+		httpPort = "80"
+		db = database.NewService(true, true)
+	}
+	defer db.Close()
+
+	handler := server.NewServer(db)
 
 	httpServer := &http.Server{
-		Addr:         ":80",
-		Handler:      mux,
+		Addr:         ":" + httpPort,
+		Handler:      handler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Info("Staring HTTP server", "port", 80)
+	log.Info("Staring HTTP server", "port", httpPort)
 	err := httpServer.ListenAndServe()
 	if err != nil {
 		log.Error("Server failed to start", "err", err)
-	}
-
-}
-
-func HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	resp := map[string]string{"message": "Hello World"}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.Error("encode error", "error", err.Error(), "method", r.Method, "url", r.URL, "stack", debug.Stack())
-		return
 	}
 }

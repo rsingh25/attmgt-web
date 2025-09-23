@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-# RUN go tool sqlc generate .
+RUN go tool sqlc generate .
 
 RUN CGO_ENABLED=0 go build -o main main.go
 

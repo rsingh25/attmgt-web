@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS employee;
+DROP TABLE IF EXISTS shift_def;
+DROP TABLE IF EXISTS raw_punch;
+DROP TABLE IF EXISTS punch;
+DROP TABLE IF EXISTS punch_deviation_axn;
+DROP TABLE IF EXISTS roster;

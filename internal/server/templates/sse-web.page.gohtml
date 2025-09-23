@@ -1,0 +1,113 @@
+{{template "base" .}}
+
+{{define "title"}}
+Server Sent event Demo
+{{end}}
+
+{{define "css"}}
+<style>
+    /* Menu */
+
+    .datatable-column-filter-wrapper {
+        position: absolute;
+    }
+
+    .datatable-column-filter-menu {
+        background: #fff none repeat scroll 0 0;
+        border-radius: 3px;
+        margin: 0;
+        min-width: 220px;
+        padding: 5px 0;
+        box-shadow: 0px 0px 10px 2px #aaa;
+    }
+
+    .datatable-column-filter-menu>li {
+        list-style: none;
+    }
+
+    .datatable-column-filter-menu>li,
+    .datatable-column-filter-menu>li>label {
+        cursor: pointer;
+    }
+</style>
+{{end}}
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="text-center mt-4">Server Sent event demo</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <a id="check-availability-button" href="#!" class="btn btn-success"
+                onclick="fetch('/generate-event', { method: 'POST' })">Generate Event</a>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <table id="events"></table>
+        </div>
+
+    </div>
+</div>
+
+{{end}}
+
+{{define "js"}}
+
+<script>
+    const dataTable = new simpleDatatables.DataTable("#events", {
+        data: {
+            headings: [{ text: 'Event Type', data: 'event' }, { text: 'Event Data', data: 'data' }],
+        },
+        searchable: true,
+        sortable: true,
+        perPage: 10,
+        perPageSelect: [5, 10, 15, ["All", -1]],
+
+        tableRender: (_data, table, type) => {
+            if (type === "print") {
+                return table
+            }
+            const tHead = table.childNodes[0]
+            const filterHeaders = {
+                nodeName: "TR",
+                childNodes: tHead.childNodes[0].childNodes.map(
+                    (_th, index) => ({
+                        nodeName: "TH",
+                        childNodes: [
+                            {
+                                nodeName: "INPUT",
+                                attributes: {
+                                    class: "datatable-input",
+                                    type: "search",
+                                    "data-columns": `[${index}]`
+                                }
+                            }
+                        ]
+                    })
+                )
+            }
+            tHead.childNodes.push(filterHeaders)
+            return table
+        },
+    });
+
+    simpleDatatables.addColumnFilter(dataTable)
+
+    var sse = new EventSource("/sse-listen");
+
+    sse.onmessage = function (event) {
+        var eventData = JSON.parse(event.data)
+        dataTable.insert([eventData]);
+    };
+
+    sse.onerror = function (event) {
+        setTimeout(() => (console.log("Error event", event)), 1000)
+    }
+
+</script>
+
+{{end}}
